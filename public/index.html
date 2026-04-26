@@ -219,7 +219,7 @@ function renderTimer() {
   }
 
   num.textContent = selDay ? fmtSecs(T.remaining) : '—';
-  play.textContent = T.running ? '⏸' : '▶';
+  play.innerHTML = T.running ? '<svg width="12" height="14" viewBox="0 0 12 14"><rect x="0" y="0" width="4" height="14" rx="1" fill="currentColor"/><rect x="8" y="0" width="4" height="14" rx="1" fill="currentColor"/></svg>' : '▶';
   play.classList.toggle('running', T.running);
   reset.style.display = (!T.running && T.remaining < T.secs) ? 'flex' : 'none';
   status.textContent = selDay ? 'Descanso entre series' : 'Elegí un día para empezar';
