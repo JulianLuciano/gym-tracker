@@ -84,7 +84,7 @@ Un solo timer global en la parte superior. El usuario siempre le da play manualm
 
 **Al terminar:** beep triple (Web Audio API) + vibración si el dispositivo lo soporta.
 
-**Animación del círculo:** al setear un tiempo el arco se llena instantáneamente. Al darle play empieza a drenar linealmente hasta cero.
+**Animación del círculo:** al setear un tiempo el arco se llena instantáneamente. Al darle play empieza a drenar linealmente hasta cero. El botón de pausa es un ícono SVG minimalista (dos barras), consistente con el estilo del play.
 
 ---
 
@@ -97,6 +97,12 @@ Cada ejercicio muestra:
 - Campo de carga en kg con la última carga registrada como referencia
 
 Al marcar un ejercicio como completado, la card se **colapsa** mostrando solo la primera línea. Se puede re-expandir tocando cualquier parte del header. El estado de colapso persiste en localStorage durante la sesión.
+
+---
+
+## Navegación por días
+
+Los 4 días se muestran en una fila única de tabs con ancho parejo (`flex: 1`). Solo aparece el nombre del día ("Día 1", "Día 2", etc.) para mantener altura uniforme. El subtítulo del día activo se muestra debajo de los tabs como línea de contexto.
 
 ---
 
@@ -114,17 +120,22 @@ Todo el estado se guarda en `localStorage` bajo la key `gym_v4`:
 
 ```json
 {
+  "_ts": 1714230000000,
   "sessions": [{ "day": 1, "date": "Sun Apr 27 2025" }],
   "loads": {
     "d1e1": [{ "kg": 80, "date": "27/04" }]
   },
   "session": {
-    "day": 1,
+    "day": null,
     "completed": { "d1e1": true },
     "collapsed": { "d1e1": true }
   }
 }
 ```
+
+**TTL de sesión:** el campo `_ts` registra el último cambio. Si pasan más de 25 minutos sin actividad, el progreso de sesión se limpia al reabrir la app (ventana deslizante). Las cargas y el historial de sesiones nunca se borran por TTL.
+
+**Arranque limpio:** al cargar la página, `session.day` siempre se fuerza a `null` — hay que re-elegir el día aunque haya progreso guardado.
 
 El schema está pensado para migrar limpiamente a Supabase cuando se integre al Personal Hub — `sessions` y `loads` se convierten en tablas directamente.
 
