@@ -4,86 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gym Tracker</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-.app { max-width: 680px; margin: 0 auto; padding: 1rem 0 3rem; font-family: var(--font-sans); }
-.header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 0.5px solid var(--color-border-tertiary); }
-.header h1 { font-size: 18px; font-weight: 500; color: var(--color-text-primary); }
-.header p { font-size: 13px; color: var(--color-text-secondary); margin-top: 2px; }
-.timer-bar { border-radius: var(--border-radius-lg); border: 0.5px solid var(--color-border-secondary); padding: 14px 16px; margin-bottom: 1.5rem; background: var(--color-background-primary); }
-.timer-top { display: flex; align-items: center; gap: 14px; }
-.timer-circle { position: relative; width: 52px; height: 52px; flex-shrink: 0; }
-.timer-circle svg { transform: rotate(-90deg); }
-.tc-track { fill: none; stroke: var(--color-border-tertiary); stroke-width: 3; }
-.tc-fill { fill: none; stroke: #1D9E75; stroke-width: 3; stroke-linecap: round; }
-.tc-fill.urgent { stroke: #E24B4A; }
-.tc-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
-.timer-mid { flex: 1; min-width: 0; }
-.timer-status { font-size: 11px; color: var(--color-text-tertiary); margin-bottom: 2px; }
-.timer-label { font-size: 14px; font-weight: 500; color: var(--color-text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.timer-right { display: flex; gap: 6px; align-items: center; }
-.play-btn { width: 38px; height: 38px; border-radius: 50%; border: none; background: #1D9E75; color: #E1F5EE; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: all 0.15s; flex-shrink: 0; }
-.play-btn:hover { background: #0F6E56; }
-.play-btn.running { background: #E24B4A; }
-.play-btn.running:hover { background: #A32D2D; }
-.stop-btn { width: 32px; height: 32px; border-radius: 50%; border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--color-text-secondary); transition: all 0.15s; }
-.stop-btn:hover { background: var(--color-background-secondary); }
-.timer-pills { display: flex; gap: 6px; margin-top: 12px; align-items: center; flex-wrap: nowrap; overflow: hidden; }
-.pill { padding: 4px 12px; border-radius: 20px; border: 0.5px solid var(--color-border-secondary); font-size: 12px; cursor: pointer; background: var(--color-background-primary); color: var(--color-text-secondary); transition: all 0.15s; white-space: nowrap; flex-shrink: 0; }
-.pill:hover { background: var(--color-background-secondary); }
-.pill.selected { background: #185FA5; color: #E6F1FB; border-color: #185FA5; font-weight: 500; }
-.pill-sep { flex: 1; }
-.pill-custom { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
-.pill-input { width: 48px; padding: 3px 6px; font-size: 12px; border: 0.5px solid var(--color-border-secondary); border-radius: 20px; background: var(--color-background-primary); color: var(--color-text-primary); text-align: center; }
-.pill-input:focus { outline: none; border-color: #185FA5; }
-.pill-unit { font-size: 11px; color: var(--color-text-tertiary); }
-.sched-hint { font-size: 12px; color: var(--color-text-secondary); background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 8px 12px; margin-bottom: 1rem; }
-.sched-hint strong { color: var(--color-text-primary); }
-.day-tabs { display: flex; gap: 6px; margin-bottom: 1.5rem; flex-wrap: wrap; }
-.day-tab { padding: 6px 14px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); font-size: 13px; cursor: pointer; background: var(--color-background-primary); color: var(--color-text-secondary); transition: all 0.15s; line-height: 1.4; }
-.day-tab:hover { background: var(--color-background-secondary); }
-.day-tab.active { background: #185FA5; color: #E6F1FB; border-color: #185FA5; font-weight: 500; }
-.day-tab.rec { border-color: #1D9E75; color: #1D9E75; }
-.day-tab.rec.active { background: #1D9E75; color: #E1F5EE; border-color: #1D9E75; }
-.sec-title { font-size: 12px; font-weight: 500; letter-spacing: 0.08em; color: var(--color-text-tertiary); text-transform: uppercase; margin-bottom: 10px; }
-.warmup-block { background: var(--color-background-secondary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 1.5rem; border-left: 3px solid #1D9E75; position: relative; }
-.warmup-badge { position: absolute; top: 12px; right: 14px; font-size: 11px; font-weight: 500; background: #E1F5EE; color: #0F6E56; padding: 2px 9px; border-radius: 10px; }
-.warmup-steps { list-style: none; margin-top: 4px; }
-.warmup-step { display: flex; align-items: flex-start; gap: 8px; padding: 4px 0; font-size: 13px; color: var(--color-text-secondary); }
-.step-num { font-size: 11px; font-weight: 500; color: #0F6E56; min-width: 16px; margin-top: 1px; }
-.ex-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); margin-bottom: 8px; overflow: hidden; transition: opacity 0.15s; }
-.ex-card.hernia-high { border-left: 3px solid #E24B4A; }
-.ex-card.hernia-med { border-left: 3px solid #EF9F27; }
-.ex-card.completed { opacity: 0.5; }
-.ex-header { display: flex; align-items: center; gap: 8px; padding: 12px 16px; cursor: pointer; user-select: none; }
-.ex-header:hover { background: var(--color-background-secondary); }
-.ex-name { font-size: 15px; font-weight: 500; color: var(--color-text-primary); flex: 1; }
-.ex-badges { display: flex; gap: 5px; align-items: center; flex-shrink: 0; }
-.badge-high { font-size: 10px; background: #FCEBEB; color: #A32D2D; padding: 2px 7px; border-radius: 8px; font-weight: 500; }
-.badge-med { font-size: 10px; background: #FAEEDA; color: #854F0B; padding: 2px 7px; border-radius: 8px; font-weight: 500; }
-.rest-badge { font-size: 10px; color: var(--color-text-tertiary); padding: 2px 6px; border: 0.5px solid var(--color-border-tertiary); border-radius: 8px; }
-.cbtn { width: 28px; height: 28px; border-radius: 50%; border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; transition: all 0.15s; flex-shrink: 0; }
-.cbtn:hover { background: var(--color-background-secondary); }
-.cbtn.done { background: #1D9E75; border-color: #1D9E75; color: #E1F5EE; }
-.ex-body { padding: 0 16px 14px; border-top: 0.5px solid var(--color-border-tertiary); }
-.ex-sets { font-size: 13px; color: var(--color-text-secondary); margin-top: 10px; }
-.ex-note { font-size: 11px; color: #0F6E56; margin-top: 3px; font-style: italic; }
-.load-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
-.load-input { width: 70px; padding: 4px 8px; font-size: 13px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary); }
-.load-unit { font-size: 12px; color: var(--color-text-tertiary); }
-.load-prev { font-size: 11px; color: var(--color-text-secondary); }
-.prog-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 6px; }
-.prog-wrap { height: 4px; background: var(--color-background-secondary); border-radius: 2px; margin-bottom: 1.5rem; }
-.prog-fill { height: 4px; background: #1D9E75; border-radius: 2px; transition: width 0.3s ease; }
-.finish-btn { width: 100%; padding: 12px; background: #185FA5; color: #E6F1FB; border: none; border-radius: var(--border-radius-lg); font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.15s; margin-top: 1rem; }
-.finish-btn:hover { background: #0C447C; }
-.finish-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1D9E75; color: #E1F5EE; padding: 10px 20px; border-radius: var(--border-radius-lg); font-size: 14px; font-weight: 500; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 100; white-space: nowrap; }
-.toast.show { opacity: 1; }
-</style>
 
 <div class="app">
   <h2 class="sr-only">Gym routine tracker</h2>
@@ -119,6 +42,7 @@
   <div class="day-tabs" id="day-tabs"></div>
   <div id="workout-content"></div>
 </div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -226,7 +150,11 @@ function tickT() {
   T.remaining--;
   const arc = document.getElementById('tc-arc');
   const num = document.getElementById('tc-num');
-  if (arc) { arc.style.transition = 'stroke-dashoffset 1s linear'; arc.style.strokeDashoffset = CIRC * (1 - T.remaining / T.secs); arc.classList.toggle('urgent', T.remaining <= 10); }
+  if (arc) {
+    arc.style.transition = 'stroke-dashoffset 1s linear';
+    arc.style.strokeDashoffset = CIRC * (1 - T.remaining / T.secs);
+    arc.classList.toggle('urgent', T.remaining <= 10);
+  }
   if (num) num.textContent = fmtSecs(T.remaining);
   if (T.remaining <= 0) {
     clearInterval(T.interval); T.interval = null; T.running = false;
@@ -257,20 +185,22 @@ function beep() {
   if (navigator.vibrate) navigator.vibrate([100,80,100,80,200]);
 }
 
-function fmtSecs(s) { const m = Math.floor(s/60), r = s%60; return m > 0 ? `${m}:${r.toString().padStart(2,'0')}` : `${s}s`; }
+function fmtSecs(s) {
+  const m = Math.floor(s/60), r = s%60;
+  return m > 0 ? `${m}:${r.toString().padStart(2,'0')}` : `${s}s`;
+}
 
 function renderTimer() {
-  const arc = document.getElementById('tc-arc');
-  const num = document.getElementById('tc-num');
-  const play = document.getElementById('tc-play');
-  const reset = document.getElementById('tc-reset');
+  const arc    = document.getElementById('tc-arc');
+  const num    = document.getElementById('tc-num');
+  const play   = document.getElementById('tc-play');
+  const reset  = document.getElementById('tc-reset');
   const status = document.getElementById('tc-status');
-  const label = document.getElementById('tc-label');
+  const label  = document.getElementById('tc-label');
   if (!num) return;
 
   if (arc && !T.running) {
-    const pct = T.remaining / T.secs;
-    arc.style.strokeDashoffset = CIRC * (1 - pct);
+    arc.style.strokeDashoffset = CIRC * (1 - T.remaining / T.secs);
     arc.classList.remove('urgent');
   }
 
@@ -381,20 +311,28 @@ function renderTabs() {
 
 function renderWorkout() {
   const c = document.getElementById('workout-content');
-  if (!selDay) { c.innerHTML = `<div style="text-align:center;padding:3rem 1rem;color:var(--color-text-secondary)"><p style="font-size:15px;font-weight:500;color:var(--color-text-primary);margin-bottom:8px">Seleccioná un día</p><p>Elegí arriba qué día vas a entrenar.</p></div>`; return; }
+  if (!selDay) {
+    c.innerHTML = `<div class="empty-state"><p>Seleccioná un día</p><p>Elegí arriba qué día vas a entrenar.</p></div>`;
+    return;
+  }
   const day = DAYS[selDay];
   const comp = ST.session.day===selDay ? (ST.session.completed||{}) : {};
   const collapsed = ST.session.day===selDay ? (ST.session.collapsed||{}) : {};
   const total = day.exercises.length;
   const done = Object.values(comp).filter(Boolean).length;
   const pct = total ? Math.round(done/total*100) : 0;
+
   let h = '';
   h += `<div class="prog-label">${done} / ${total} ejercicios completados (${pct}%)</div>`;
   h += `<div class="prog-wrap"><div class="prog-fill" style="width:${pct}%"></div></div>`;
+
   h += `<div class="sec-title">Calentamiento · 15 min</div>`;
   h += `<div class="warmup-block"><span class="warmup-badge">Todos los días</span><ul class="warmup-steps">`;
-  WARMUP.forEach(w => { h += `<li class="warmup-step"><span class="step-num">${w.step}.</span><span>${w.name} <span style="color:var(--color-text-tertiary);font-size:12px">· ${w.detail}</span></span></li>`; });
+  WARMUP.forEach(w => {
+    h += `<li class="warmup-step"><span class="step-num">${w.step}.</span><span>${w.name} <span style="color:#888780;font-size:12px">· ${w.detail}</span></span></li>`;
+  });
   h += `</ul></div>`;
+
   h += `<div class="sec-title">${day.label} — ${day.sub}</div>`;
   day.exercises.forEach(ex => {
     const isDone = comp[ex.id]===true;
@@ -417,6 +355,7 @@ function renderWorkout() {
     }
     h += `</div>`;
   });
+
   const allDone = done===total;
   h += `<button class="finish-btn" onclick="finishSession()" ${allDone?'':'disabled'}>${allDone?'✓ Marcar sesión como completada':'Completá todos los ejercicios para terminar'}</button>`;
   c.innerHTML = h;
@@ -440,7 +379,9 @@ function showToast(msg) {
 }
 
 function render() {
-  document.getElementById('today-label').textContent = new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'}).replace(/^\w/,c=>c.toUpperCase());
+  document.getElementById('today-label').textContent = new Date()
+    .toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})
+    .replace(/^\w/,c=>c.toUpperCase());
   renderHint(); renderTabs(); renderTimer(); renderWorkout();
 }
 
