@@ -40,6 +40,7 @@
 
   <div id="sched-hint" class="sched-hint" style="display:none"></div>
   <div class="day-tabs" id="day-tabs"></div>
+  <div class="day-tab-sub" id="day-tab-sub" style="display:none"></div>
   <div id="workout-content"></div>
 </div>
 
@@ -312,15 +313,23 @@ function renderHint() {
 function renderTabs() {
   const rec = recommendDay();
   const c = document.getElementById('day-tabs');
+  const sub = document.getElementById('day-tab-sub');
   c.innerHTML = '';
   [1,2,3,4].forEach(d => {
     const day = DAYS[d];
     const btn = document.createElement('button');
     btn.className = 'day-tab' + (d===selDay?' active':'') + (d===rec&&d!==selDay?' rec':'');
-    btn.innerHTML = `<span style="font-weight:500">${day.label}</span><span style="font-size:11px;display:block;margin-top:1px;opacity:0.75">${day.sub}</span>${day.optional?'<span style="font-size:10px;opacity:0.55;display:block">opcional</span>':''}`;
+    btn.textContent = day.label;
     btn.onclick = () => onDaySelect(d);
     c.appendChild(btn);
   });
+  if (selDay && sub) {
+    const day = DAYS[selDay];
+    sub.style.display = 'block';
+    sub.textContent = day.sub + (day.optional ? ' · opcional' : '');
+  } else if (sub) {
+    sub.style.display = 'none';
+  }
 }
 
 function renderWorkout() {
