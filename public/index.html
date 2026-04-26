@@ -96,8 +96,22 @@ const DAYS = {
   ]},
 };
 
-function loadST() { try { return JSON.parse(localStorage.getItem(SK)) || {}; } catch(e) { return {}; } }
-function saveST() { try { localStorage.setItem(SK, JSON.stringify(ST)); } catch(e) {} }
+const TTL = 25 * 60 * 1000;
+
+function loadST() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(SK)) || {};
+    if (raw._ts && Date.now() - raw._ts > TTL) {
+      raw.session = { day: null, completed: {}, collapsed: {} };
+    }
+    raw.session = raw.session || { day: null, completed: {}, collapsed: {} };
+    raw.session.day = null;
+    return raw;
+  } catch(e) { return {}; }
+}
+function saveST() {
+  try { ST._ts = Date.now(); localStorage.setItem(SK, JSON.stringify(ST)); } catch(e) {}
+}
 
 let ST = loadST();
 if (!ST.sessions) ST.sessions = [];
