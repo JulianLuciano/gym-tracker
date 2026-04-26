@@ -18,14 +18,15 @@ App web para seguimiento de rutina de gimnasio. Diseñada para uso personal con 
 ```
 gym-tracker/
 ├── public/
-│   └── index.html        # App completa — UI, lógica y estilos en un solo archivo
+│   ├── index.html        # Estructura HTML + lógica JS
+│   └── style.css         # Estilos, variables de color, tipografía
 ├── server.js             # Express sirve /public como estático
 ├── package.json
 ├── .gitignore
 └── README.md
 ```
 
-Todo vive en `index.html`. La decisión de no separar en múltiples archivos fue intencional: la app es lo suficientemente pequeña como para que un solo archivo sea más fácil de mantener y deployar. Cuando se integre al Personal Hub esto se modulariza.
+El CSS vive separado del HTML. Las variables de color y tipografía están definidas en `:root` dentro de `style.css`, lo que facilita ajustes visuales sin tocar la lógica. Cuando se integre al Personal Hub, la JS se modulariza.
 
 ---
 
