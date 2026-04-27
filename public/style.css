@@ -286,3 +286,13 @@ html, body {
   font-size: 12px; color: var(--text-secondary);
   margin-bottom: 1rem; padding: 0 2px;
 }
+
+/* ── Lang toggle ── */
+.lang-toggle {
+  padding: 5px 12px; border-radius: 20px;
+  border: 1px solid var(--border-mid); font-size: 12px; font-weight: 500;
+  cursor: pointer; background: var(--bg-primary); color: var(--text-secondary);
+  font-family: inherit; transition: all 0.15s; flex-shrink: 0;
+  letter-spacing: 0.04em;
+}
+.lang-toggle:hover { background: var(--bg-secondary); color: var(--text-primary); }

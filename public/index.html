@@ -12,9 +12,10 @@
   <h2 class="sr-only">Gym routine tracker</h2>
   <div class="header">
     <div>
-      <h1>Rutina de gimnasio</h1>
+      <h1 id="header-title">Rutina de gimnasio</h1>
       <p id="today-label"></p>
     </div>
+    <button class="lang-toggle" id="lang-toggle" onclick="toggleLang()">EN</button>
   </div>
 
   <div class="timer-bar">
@@ -27,7 +28,7 @@
         <div class="tc-num" id="tc-num">—</div>
       </div>
       <div class="timer-mid">
-        <div class="timer-status" id="tc-status">Elegí un día para empezar</div>
+        <div class="timer-status" id="tc-status"></div>
         <div class="timer-label" id="tc-label">—</div>
       </div>
       <div class="timer-right">
@@ -38,7 +39,6 @@
     <div class="timer-pills" id="tc-pills"></div>
   </div>
 
-  <div id="sched-hint" class="sched-hint" style="display:none"></div>
   <div class="day-tabs" id="day-tabs"></div>
   <div class="day-tab-sub" id="day-tab-sub" style="display:none"></div>
   <div id="workout-content"></div>
@@ -51,53 +51,163 @@ const SK = 'gym_v4';
 const CIRC = 2 * Math.PI * 22;
 const PILL_OPTS = [45, 60, 90, 120];
 const INTER_EX = 90;
+const TTL = 25 * 60 * 1000;
 
-const WARMUP = [
-  { step:1, name:'Movilidad de cadera (círculos, hip flexor stretch)', detail:'2 min' },
-  { step:2, name:'Cat-Cow + rotación torácica', detail:'2 min · L5-S1' },
-  { step:3, name:'Dead Bug', detail:'3x10' },
-  { step:4, name:'Hip Abduction con banda', detail:'3x8 c/lado' },
-  { step:5, name:'Barbell Back Squat', detail:'3x6, liviano, técnica' },
-  { step:6, name:'Romanian Deadlift', detail:'3x6-8, liviano, técnica' },
-];
+// ── i18n ──────────────────────────────────────────────────────────────────────
 
-const DAYS = {
-  1:{ label:'Día 1', sub:'Tren inferior + pecho', exercises:[
-    { id:'d1e1', name:'Sentadilla con barra', sets:'4x6-8', hernia:'high', rest:120, note:'Core activado, no flectés lumbar' },
-    { id:'d1e2', name:'Press de banca plano', sets:'4x8-10', hernia:null, rest:120 },
-    { id:'d1e3', name:'Press de banca inclinado mancuernas', sets:'3x10', hernia:null, rest:90 },
-    { id:'d1e4', name:'Remo con mancuerna', sets:'4x10 c/lado', hernia:'med', rest:90, note:'Apoyá rodilla en banco, espalda neutra' },
-    { id:'d1e5', name:'Fondos / press francés', sets:'3x10', hernia:null, rest:60 },
-    { id:'d1e6', name:'Plancha', sets:'3x40seg', hernia:'med', rest:60, note:'No hundas la cadera' },
-  ]},
-  2:{ label:'Día 2', sub:'Posterior + hombro', exercises:[
-    { id:'d2e1', name:'Romanian Deadlift (carga progresiva)', sets:'4x8', hernia:'high', rest:120, note:'El más terapéutico — espalda recta, caderas atrás' },
-    { id:'d2e2', name:'Press militar con barra', sets:'4x8-10', hernia:null, rest:120 },
-    { id:'d2e3', name:'Elevaciones laterales', sets:'3x12-15', hernia:null, rest:60 },
-    { id:'d2e4', name:'Dominadas / jalón al pecho', sets:'4x8-10', hernia:'med', rest:90, note:'Descomprime la columna — usalo a tu favor' },
-    { id:'d2e5', name:'Hip thrust con barra', sets:'3x10', hernia:'high', rest:90, note:'Activá glúteos antes de cargar, neutro lumbar arriba' },
-    { id:'d2e6', name:'Curl de bíceps con barra', sets:'3x10', hernia:null, rest:60 },
-  ]},
-  3:{ label:'Día 3', sub:'Unilateral + brazo', exercises:[
-    { id:'d3e1', name:'Sentadilla búlgara', sets:'4x8 c/lado', hernia:'med', rest:90, note:'Menos carga espinal que la bilateral' },
-    { id:'d3e2', name:'Press inclinado mancuernas', sets:'3x10', hernia:null, rest:90 },
-    { id:'d3e3', name:'Remo en polea', sets:'4x10', hernia:'med', rest:90, note:'Estirá en la excéntrica, espalda neutra' },
-    { id:'d3e4', name:'Curl martillo', sets:'3x12', hernia:null, rest:60 },
-    { id:'d3e5', name:'Extensión tríceps en polea', sets:'3x12', hernia:null, rest:60 },
-    { id:'d3e6', name:"Farmer's carry", sets:'3x20m', hernia:'high', rest:90, note:'Carga simétrica, core muy apretado, pasos cortos' },
-  ]},
-  4:{ label:'Día 4', sub:'Tren superior puro', optional:true, exercises:[
-    { id:'d4e1', name:'Press de banca plano', sets:'5x5 (fuerza)', hernia:null, rest:120 },
-    { id:'d4e2', name:'Press militar', sets:'4x8', hernia:null, rest:120 },
-    { id:'d4e3', name:'Elevaciones laterales', sets:'4x15', hernia:null, rest:60 },
-    { id:'d4e4', name:'Curl de bíceps con barra', sets:'4x10', hernia:null, rest:60 },
-    { id:'d4e5', name:'Curl concentrado mancuerna', sets:'3x12', hernia:null, rest:60 },
-    { id:'d4e6', name:'Press francés / fondos', sets:'4x10', hernia:null, rest:60 },
-    { id:'d4e7', name:'Extensión polea con cuerda', sets:'3x15', hernia:null, rest:60 },
-  ]},
+let lang = localStorage.getItem('gym_lang') || 'es';
+
+const I18N = {
+  es: {
+    appTitle: 'Rutina de gimnasio',
+    toggleLang: 'EN',
+    timerIdle: 'Elegí un día para empezar',
+    timerRest: 'Descanso entre series',
+    allDone: 'Todos completados',
+    warmupTitle: 'Calentamiento · 15 min',
+    warmupBadge: 'Siempre',
+    progressLabel: (done, total, pct) => `${done} / ${total} ejercicios completados (${pct}%)`,
+    emptyTitle: 'Seleccioná un día',
+    emptyBody: 'Elegí arriba qué día vas a entrenar.',
+    finishReady: '✓ Marcar sesión como completada',
+    finishWaiting: 'Completá todos los ejercicios para terminar',
+    toastDone: '¡Listo!',
+    toastSession: 'Sesión registrada. ¡Bien hecho!',
+    toastSeriesRest: (t) => `Descanso entre series: ${t}`,
+    lastLoad: (kg, date) => `Última: ${kg}kg · ${date}`,
+    optional: 'opcional',
+    seg: 'seg',
+    dateLocale: 'es-AR',
+  },
+  en: {
+    appTitle: 'Gym Routine',
+    toggleLang: 'ES',
+    timerIdle: 'Select a day to start',
+    timerRest: 'Rest between sets',
+    allDone: 'All done',
+    warmupTitle: 'Warm-up · 15 min',
+    warmupBadge: 'Always',
+    progressLabel: (done, total, pct) => `${done} / ${total} exercises completed (${pct}%)`,
+    emptyTitle: 'Select a day',
+    emptyBody: 'Choose above which day you want to train.',
+    finishReady: '✓ Mark session as complete',
+    finishWaiting: 'Complete all exercises to finish',
+    toastDone: 'Done!',
+    toastSession: 'Session saved. Well done!',
+    toastSeriesRest: (t) => `Rest between sets: ${t}`,
+    lastLoad: (kg, date) => `Last: ${kg}kg · ${date}`,
+    optional: 'optional',
+    seg: 'sec',
+    dateLocale: 'en-GB',
+  }
 };
 
-const TTL = 25 * 60 * 1000;
+function t() { return I18N[lang]; }
+
+function toggleLang() {
+  lang = lang === 'es' ? 'en' : 'es';
+  localStorage.setItem('gym_lang', lang);
+  render();
+}
+
+// ── Data ──────────────────────────────────────────────────────────────────────
+
+const WARMUP = {
+  es: [
+    { step:1, name:'Movilidad de cadera (círculos, hip flexor stretch)', detail:'2 min' },
+    { step:2, name:'Cat-Cow + rotación torácica', detail:'2 min · L5-S1' },
+    { step:3, name:'Dead Bug', detail:'3x10' },
+    { step:4, name:'Hip Abduction con banda', detail:'3x8 c/lado' },
+    { step:5, name:'Barbell Back Squat', detail:'3x6, liviano, técnica' },
+    { step:6, name:'Peso muerto', detail:'3x6-8, liviano, técnica' },
+  ],
+  en: [
+    { step:1, name:'Hip mobility (circles, hip flexor stretch)', detail:'2 min' },
+    { step:2, name:'Cat-Cow + thoracic rotation', detail:'2 min · L5-S1' },
+    { step:3, name:'Dead Bug', detail:'3x10' },
+    { step:4, name:'Banded Hip Abduction', detail:'3x8 each side' },
+    { step:5, name:'Barbell Back Squat', detail:'3x6, light, technique' },
+    { step:6, name:'Romanian Deadlift', detail:'3x6-8, light, technique' },
+  ]
+};
+
+const DAYS = {
+  es: {
+    1:{ label:'Día 1', sub:'Tren inferior + pecho', exercises:[
+      { id:'d1e1', name:'Sentadilla con barra', sets:'4x6-8', hernia:'high', rest:120, note:'Core activado, no flectés lumbar' },
+      { id:'d1e2', name:'Press de banca plano', sets:'4x8-10', hernia:null, rest:120 },
+      { id:'d1e3', name:'Press de banca inclinado mancuernas', sets:'3x10', hernia:null, rest:90 },
+      { id:'d1e4', name:'Remo con mancuerna', sets:'4x10 c/lado', hernia:'med', rest:90, note:'Apoyá rodilla en banco, espalda neutra' },
+      { id:'d1e5', name:'Fondos / press francés', sets:'3x10', hernia:null, rest:60 },
+      { id:'d1e6', name:'Plancha', sets:'3x40seg', hernia:'med', rest:60, note:'No hundas la cadera' },
+    ]},
+    2:{ label:'Día 2', sub:'Posterior + hombro', exercises:[
+      { id:'d2e1', name:'Peso muerto (carga progresiva)', sets:'4x8', hernia:'high', rest:120, note:'El más terapéutico — espalda recta, caderas atrás' },
+      { id:'d2e2', name:'Press militar con barra', sets:'4x8-10', hernia:null, rest:120 },
+      { id:'d2e3', name:'Elevaciones laterales', sets:'3x12-15', hernia:null, rest:60 },
+      { id:'d2e4', name:'Dominadas / jalón al pecho', sets:'4x8-10', hernia:'med', rest:90, note:'Descomprime la columna — usalo a tu favor' },
+      { id:'d2e5', name:'Hip thrust con barra', sets:'3x10', hernia:'high', rest:90, note:'Activá glúteos antes de cargar, neutro lumbar arriba' },
+      { id:'d2e6', name:'Curl de bíceps con barra', sets:'3x10', hernia:null, rest:60 },
+    ]},
+    3:{ label:'Día 3', sub:'Unilateral + brazo', exercises:[
+      { id:'d3e1', name:'Sentadilla búlgara', sets:'4x8 c/lado', hernia:'med', rest:90, note:'Menos carga espinal que la bilateral' },
+      { id:'d3e2', name:'Press inclinado mancuernas', sets:'3x10', hernia:null, rest:90 },
+      { id:'d3e3', name:'Remo en polea', sets:'4x10', hernia:'med', rest:90, note:'Estirá en la excéntrica, espalda neutra' },
+      { id:'d3e4', name:'Curl martillo', sets:'3x12', hernia:null, rest:60 },
+      { id:'d3e5', name:'Extensión tríceps en polea', sets:'3x12', hernia:null, rest:60 },
+      { id:'d3e6', name:"Farmer's carry", sets:'3x20m', hernia:'high', rest:90, note:'Carga simétrica, core muy apretado, pasos cortos' },
+    ]},
+    4:{ label:'Día 4', sub:'Tren superior puro', optional:true, exercises:[
+      { id:'d4e1', name:'Press de banca plano', sets:'5x5 (fuerza)', hernia:null, rest:120 },
+      { id:'d4e2', name:'Press militar', sets:'4x8', hernia:null, rest:120 },
+      { id:'d4e3', name:'Elevaciones laterales', sets:'4x15', hernia:null, rest:60 },
+      { id:'d4e4', name:'Curl de bíceps con barra', sets:'4x10', hernia:null, rest:60 },
+      { id:'d4e5', name:'Curl concentrado mancuerna', sets:'3x12', hernia:null, rest:60 },
+      { id:'d4e6', name:'Press francés / fondos', sets:'4x10', hernia:null, rest:60 },
+      { id:'d4e7', name:'Extensión polea con cuerda', sets:'3x15', hernia:null, rest:60 },
+    ]},
+  },
+  en: {
+    1:{ label:'Day 1', sub:'Lower body + chest', exercises:[
+      { id:'d1e1', name:'Barbell back squat', sets:'4x6-8', hernia:'high', rest:120, note:'Brace your core, don\'t flex the lower back' },
+      { id:'d1e2', name:'Flat bench press', sets:'4x8-10', hernia:null, rest:120 },
+      { id:'d1e3', name:'Incline dumbbell press', sets:'3x10', hernia:null, rest:90 },
+      { id:'d1e4', name:'Dumbbell row', sets:'4x10 each side', hernia:'med', rest:90, note:'Rest knee on bench, neutral spine' },
+      { id:'d1e5', name:'Dips / skull crushers', sets:'3x10', hernia:null, rest:60 },
+      { id:'d1e6', name:'Plank', sets:'3x40sec', hernia:'med', rest:60, note:'Don\'t let the hips sag' },
+    ]},
+    2:{ label:'Day 2', sub:'Posterior + shoulders', exercises:[
+      { id:'d2e1', name:'Romanian deadlift (progressive load)', sets:'4x8', hernia:'high', rest:120, note:'Most therapeutic — straight back, hips back' },
+      { id:'d2e2', name:'Barbell overhead press', sets:'4x8-10', hernia:null, rest:120 },
+      { id:'d2e3', name:'Lateral raises', sets:'3x12-15', hernia:null, rest:60 },
+      { id:'d2e4', name:'Pull-ups / lat pulldown', sets:'4x8-10', hernia:'med', rest:90, note:'Decompresses the spine — use it to your advantage' },
+      { id:'d2e5', name:'Barbell hip thrust', sets:'3x10', hernia:'high', rest:90, note:'Activate glutes before loading, neutral lumbar at top' },
+      { id:'d2e6', name:'Barbell bicep curl', sets:'3x10', hernia:null, rest:60 },
+    ]},
+    3:{ label:'Day 3', sub:'Unilateral + arms', exercises:[
+      { id:'d3e1', name:'Bulgarian split squat', sets:'4x8 each side', hernia:'med', rest:90, note:'Less spinal load than bilateral squat' },
+      { id:'d3e2', name:'Incline dumbbell press', sets:'3x10', hernia:null, rest:90 },
+      { id:'d3e3', name:'Cable row', sets:'4x10', hernia:'med', rest:90, note:'Full stretch on the eccentric, neutral spine' },
+      { id:'d3e4', name:'Hammer curl', sets:'3x12', hernia:null, rest:60 },
+      { id:'d3e5', name:'Cable tricep extension', sets:'3x12', hernia:null, rest:60 },
+      { id:'d3e6', name:"Farmer's carry", sets:'3x20m', hernia:'high', rest:90, note:'Symmetric load, very tight core, short steps' },
+    ]},
+    4:{ label:'Day 4', sub:'Upper body only', optional:true, exercises:[
+      { id:'d4e1', name:'Flat bench press', sets:'5x5 (strength)', hernia:null, rest:120 },
+      { id:'d4e2', name:'Overhead press', sets:'4x8', hernia:null, rest:120 },
+      { id:'d4e3', name:'Lateral raises', sets:'4x15', hernia:null, rest:60 },
+      { id:'d4e4', name:'Barbell bicep curl', sets:'4x10', hernia:null, rest:60 },
+      { id:'d4e5', name:'Concentration curl', sets:'3x12', hernia:null, rest:60 },
+      { id:'d4e6', name:'Skull crushers / dips', sets:'4x10', hernia:null, rest:60 },
+      { id:'d4e7', name:'Rope tricep pushdown', sets:'3x15', hernia:null, rest:60 },
+    ]},
+  }
+};
+
+function getDays() { return DAYS[lang]; }
+function getWarmup() { return WARMUP[lang]; }
+
+// ── State ─────────────────────────────────────────────────────────────────────
 
 function loadST() {
   try {
@@ -123,16 +233,18 @@ if (!ST.session.collapsed) ST.session.collapsed = {};
 let selDay = ST.session.day || null;
 let T = { secs: 120, running: false, remaining: 120, interval: null, manual: false, pendingNext: null };
 
+// ── Timer logic ───────────────────────────────────────────────────────────────
+
 function getNextPendingEx() {
   if (!selDay) return null;
   const comp = ST.session.day === selDay ? (ST.session.completed || {}) : {};
-  return DAYS[selDay].exercises.find(e => !comp[e.id]) || null;
+  return getDays()[selDay].exercises.find(e => !comp[e.id]) || null;
 }
 
 function getTimerLabel() {
   if (!selDay) return '—';
   const next = getNextPendingEx();
-  return next ? next.name : 'Todos completados';
+  return next ? next.name : t().allDone;
 }
 
 function setTimerSecs(secs, manual) {
@@ -177,9 +289,9 @@ function tickT() {
     if (T.pendingNext !== null && !T.manual) {
       const next = T.pendingNext; T.pendingNext = null;
       setTimerSecs(next, false);
-      showToast('Descanso entre series: ' + fmtSecs(next));
+      showToast(t().toastSeriesRest(fmtSecs(next)));
     } else {
-      showToast('¡Listo!');
+      showToast(t().toastDone);
       renderTimer();
     }
   }
@@ -188,13 +300,13 @@ function tickT() {
 function beep() {
   try {
     const ac = new (window.AudioContext || window.webkitAudioContext)();
-    [0, 0.18, 0.36].forEach(t => {
+    [0, 0.18, 0.36].forEach(off => {
       const o = ac.createOscillator(), g = ac.createGain();
       o.connect(g); g.connect(ac.destination);
       o.frequency.value = 880;
-      g.gain.setValueAtTime(0.25, ac.currentTime + t);
-      g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + t + 0.13);
-      o.start(ac.currentTime + t); o.stop(ac.currentTime + t + 0.14);
+      g.gain.setValueAtTime(0.25, ac.currentTime + off);
+      g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + off + 0.13);
+      o.start(ac.currentTime + off); o.stop(ac.currentTime + off + 0.14);
     });
   } catch(e) {}
   if (navigator.vibrate) navigator.vibrate([100,80,100,80,200]);
@@ -204,6 +316,8 @@ function fmtSecs(s) {
   const m = Math.floor(s/60), r = s%60;
   return m > 0 ? `${m}:${r.toString().padStart(2,'0')}` : `${s}s`;
 }
+
+// ── Render ────────────────────────────────────────────────────────────────────
 
 function renderTimer() {
   const arc    = document.getElementById('tc-arc');
@@ -220,10 +334,12 @@ function renderTimer() {
   }
 
   num.textContent = selDay ? fmtSecs(T.remaining) : '—';
-  play.innerHTML = T.running ? '<svg width="12" height="14" viewBox="0 0 12 14"><rect x="0" y="0" width="4" height="14" rx="1" fill="currentColor"/><rect x="8" y="0" width="4" height="14" rx="1" fill="currentColor"/></svg>' : '▶';
+  play.innerHTML = T.running
+    ? '<svg width="12" height="14" viewBox="0 0 12 14"><rect x="0" y="0" width="4" height="14" rx="1" fill="currentColor"/><rect x="8" y="0" width="4" height="14" rx="1" fill="currentColor"/></svg>'
+    : '▶';
   play.classList.toggle('running', T.running);
   reset.style.display = (!T.running && T.remaining < T.secs) ? 'flex' : 'none';
-  status.textContent = selDay ? 'Descanso entre series' : 'Elegí un día para empezar';
+  status.textContent = selDay ? t().timerRest : t().timerIdle;
   label.textContent = getTimerLabel();
   renderPills();
 }
@@ -236,17 +352,92 @@ function renderPills() {
     html += `<button class="pill${T.secs === p ? ' selected' : ''}" onclick="pickPill(${p})">${p}s</button>`;
   });
   html += `<span class="pill-sep"></span>`;
-  html += `<div class="pill-custom"><input type="number" class="pill-input" value="${T.secs}" min="10" max="600" step="5" onchange="pickCustom(this.value)" onfocus="this.select()"><span class="pill-unit">seg</span></div>`;
+  html += `<div class="pill-custom"><input type="number" class="pill-input" value="${T.secs}" min="10" max="600" step="5" onchange="pickCustom(this.value)" onfocus="this.select()"><span class="pill-unit">${t().seg}</span></div>`;
   c.innerHTML = html;
 }
 
-function pickPill(secs) { setTimerSecs(secs, true); }
-function pickCustom(val) { const n = parseInt(val); if (!isNaN(n) && n >= 10) setTimerSecs(n, true); }
+function renderTabs() {
+  const c = document.getElementById('day-tabs');
+  const sub = document.getElementById('day-tab-sub');
+  const days = getDays();
+  c.innerHTML = '';
+  [1,2,3,4].forEach(d => {
+    const day = days[d];
+    const btn = document.createElement('button');
+    btn.className = 'day-tab' + (d===selDay?' active':'');
+    btn.textContent = day.label;
+    btn.onclick = () => onDaySelect(d);
+    c.appendChild(btn);
+  });
+  if (selDay && sub) {
+    const day = days[selDay];
+    sub.style.display = 'block';
+    sub.textContent = day.sub + (day.optional ? ` · ${t().optional}` : '');
+  } else if (sub) {
+    sub.style.display = 'none';
+  }
+}
+
+function renderWorkout() {
+  const c = document.getElementById('workout-content');
+  const days = getDays();
+  if (!selDay) {
+    c.innerHTML = `<div class="empty-state"><p>${t().emptyTitle}</p><p>${t().emptyBody}</p></div>`;
+    return;
+  }
+  const day = days[selDay];
+  const comp = ST.session.day===selDay ? (ST.session.completed||{}) : {};
+  const collapsed = ST.session.day===selDay ? (ST.session.collapsed||{}) : {};
+  const total = day.exercises.length;
+  const dayIds = new Set(day.exercises.map(e => e.id));
+  const done = Object.entries(comp).filter(([id, v]) => v && dayIds.has(id)).length;
+  const pct = total ? Math.min(100, Math.round(done/total*100)) : 0;
+
+  let h = '';
+  h += `<div class="prog-label">${t().progressLabel(done, total, pct)}</div>`;
+  h += `<div class="prog-wrap"><div class="prog-fill" style="width:${pct}%"></div></div>`;
+
+  h += `<div class="sec-title">${t().warmupTitle}</div>`;
+  h += `<div class="warmup-block"><span class="warmup-badge">${t().warmupBadge}</span><ul class="warmup-steps">`;
+  getWarmup().forEach(w => {
+    h += `<li class="warmup-step"><span class="step-num">${w.step}.</span><span>${w.name} <span style="color:#888780;font-size:12px">· ${w.detail}</span></span></li>`;
+  });
+  h += `</ul></div>`;
+
+  h += `<div class="sec-title">${day.label} — ${day.sub}</div>`;
+  day.exercises.forEach(ex => {
+    const isDone = comp[ex.id]===true;
+    const isCollapsed = collapsed[ex.id]===true;
+    const prev = (ST.loads[ex.id]||[]).slice(-1)[0];
+    h += `<div class="ex-card${ex.hernia==='high'?' hernia-high':ex.hernia==='med'?' hernia-med':''}${isDone?' completed':''}">`;
+    h += `<div class="ex-header" onclick="toggleCollapse('${ex.id}')">`;
+    h += `<span class="ex-name">${ex.name}</span><div class="ex-badges">`;
+    if (ex.hernia==='high') h += `<span class="badge-high">⭐⭐</span>`;
+    else if (ex.hernia==='med') h += `<span class="badge-med">⭐</span>`;
+    h += `<span class="rest-badge">${fmtSecs(ex.rest)}</span>`;
+    h += `<button class="cbtn${isDone?' done':''}" onclick="event.stopPropagation();onExComplete('${ex.id}')">${isDone?'✓':''}</button>`;
+    h += `</div></div>`;
+    if (!isCollapsed) {
+      h += `<div class="ex-body"><div class="ex-sets">${ex.sets}</div>`;
+      if (ex.note) h += `<div class="ex-note">${ex.note}</div>`;
+      h += `<div class="load-row"><input type="number" class="load-input" placeholder="${prev?prev.kg+'kg':'kg'}" step="2.5" min="0" oninput="saveLoad('${ex.id}',this.value)"><span class="load-unit">kg</span>`;
+      if (prev) h += `<span class="load-prev">${t().lastLoad(prev.kg, prev.date)}</span>`;
+      h += `</div></div>`;
+    }
+    h += `</div>`;
+  });
+
+  const allDone = done === total;
+  h += `<button class="finish-btn" onclick="finishSession()" ${allDone?'':'disabled'}>${allDone ? t().finishReady : t().finishWaiting}</button>`;
+  c.innerHTML = h;
+}
+
+// ── Actions ───────────────────────────────────────────────────────────────────
 
 function onDaySelect(d) {
   selDay = d; ST.session.day = d; saveST();
   const comp = ST.session.completed || {};
-  const first = DAYS[d].exercises.find(e => !comp[e.id]);
+  const first = getDays()[d].exercises.find(e => !comp[e.id]);
   if (first) { T.manual = false; T.pendingNext = null; setTimerSecs(first.rest, false); }
   render();
 }
@@ -259,13 +450,13 @@ function onExComplete(exId) {
   if (!cur) {
     ST.session.collapsed[exId] = true;
     const comp = ST.session.completed;
-    const next = DAYS[selDay].exercises.find(e => !comp[e.id]);
+    const next = getDays()[selDay].exercises.find(e => !comp[e.id]);
     if (!T.manual) { T.pendingNext = next ? next.rest : null; setTimerSecs(INTER_EX, false); }
   } else {
     ST.session.collapsed[exId] = false;
     if (!T.manual) {
       const comp = ST.session.completed;
-      const next = DAYS[selDay].exercises.find(e => !comp[e.id]);
+      const next = getDays()[selDay].exercises.find(e => !comp[e.id]);
       if (next) setTimerSecs(next.rest, false);
     }
   }
@@ -289,102 +480,6 @@ function saveLoad(exId, val) {
   saveST();
 }
 
-function recommendDay() {
-  const dw = new Date().getDay();
-  if (dw === 5) return null;
-  const recent = ST.sessions.filter(s => s.date !== new Date().toDateString()).slice(-4).map(s => s.day);
-  if (!recent.length) return 1;
-  const last = recent[recent.length-1];
-  if (last===1) return 2; if (last===2) return 3;
-  if (last===3) return dw===6?4:null; if (last===4) return 1;
-  return 1;
-}
-
-function renderHint() {
-  const hint = document.getElementById('sched-hint');
-  const dw = new Date().getDay();
-  const days = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
-  const rec = recommendDay();
-  if (dw===5) { hint.style.display='block'; hint.innerHTML='Hoy es viernes — día de descanso.'; return; }
-  if (rec) { hint.style.display='block'; hint.innerHTML=`<strong>Sugerencia para hoy (${days[dw]}):</strong> Día ${rec} — ${DAYS[rec].sub}`; return; }
-  hint.style.display='block'; hint.innerHTML=`<strong>${days[dw]}</strong> — Podés descansar o hacer el Día 4 opcional.`;
-}
-
-function renderTabs() {
-  const rec = recommendDay();
-  const c = document.getElementById('day-tabs');
-  const sub = document.getElementById('day-tab-sub');
-  c.innerHTML = '';
-  [1,2,3,4].forEach(d => {
-    const day = DAYS[d];
-    const btn = document.createElement('button');
-    btn.className = 'day-tab' + (d===selDay?' active':'') + (d===rec&&d!==selDay?' rec':'');
-    btn.textContent = day.label;
-    btn.onclick = () => onDaySelect(d);
-    c.appendChild(btn);
-  });
-  if (selDay && sub) {
-    const day = DAYS[selDay];
-    sub.style.display = 'block';
-    sub.textContent = day.sub + (day.optional ? ' · opcional' : '');
-  } else if (sub) {
-    sub.style.display = 'none';
-  }
-}
-
-function renderWorkout() {
-  const c = document.getElementById('workout-content');
-  if (!selDay) {
-    c.innerHTML = `<div class="empty-state"><p>Seleccioná un día</p><p>Elegí arriba qué día vas a entrenar.</p></div>`;
-    return;
-  }
-  const day = DAYS[selDay];
-  const comp = ST.session.day===selDay ? (ST.session.completed||{}) : {};
-  const collapsed = ST.session.day===selDay ? (ST.session.collapsed||{}) : {};
-  const total = day.exercises.length;
-  const dayIds = new Set(day.exercises.map(e => e.id));
-  const done = Object.entries(comp).filter(([id, v]) => v && dayIds.has(id)).length;
-  const pct = total ? Math.min(100, Math.round(done/total*100)) : 0;
-
-  let h = '';
-  h += `<div class="prog-label">${done} / ${total} ejercicios completados (${pct}%)</div>`;
-  h += `<div class="prog-wrap"><div class="prog-fill" style="width:${pct}%"></div></div>`;
-
-  h += `<div class="sec-title">Calentamiento · 15 min</div>`;
-  h += `<div class="warmup-block"><span class="warmup-badge">Siempre</span><ul class="warmup-steps">`;
-  WARMUP.forEach(w => {
-    h += `<li class="warmup-step"><span class="step-num">${w.step}.</span><span>${w.name} <span style="color:#888780;font-size:12px">· ${w.detail}</span></span></li>`;
-  });
-  h += `</ul></div>`;
-
-  h += `<div class="sec-title">${day.label} — ${day.sub}</div>`;
-  day.exercises.forEach(ex => {
-    const isDone = comp[ex.id]===true;
-    const isCollapsed = collapsed[ex.id]===true;
-    const prev = (ST.loads[ex.id]||[]).slice(-1)[0];
-    h += `<div class="ex-card${ex.hernia==='high'?' hernia-high':ex.hernia==='med'?' hernia-med':''}${isDone?' completed':''}">`;
-    h += `<div class="ex-header" onclick="toggleCollapse('${ex.id}')">`;
-    h += `<span class="ex-name">${ex.name}</span><div class="ex-badges">`;
-    if (ex.hernia==='high') h += `<span class="badge-high">⭐⭐</span>`;
-    else if (ex.hernia==='med') h += `<span class="badge-med">⭐</span>`;
-    h += `<span class="rest-badge">${fmtSecs(ex.rest)}</span>`;
-    h += `<button class="cbtn${isDone?' done':''}" onclick="event.stopPropagation();onExComplete('${ex.id}')">${isDone?'✓':''}</button>`;
-    h += `</div></div>`;
-    if (!isCollapsed) {
-      h += `<div class="ex-body"><div class="ex-sets">${ex.sets}</div>`;
-      if (ex.note) h += `<div class="ex-note">${ex.note}</div>`;
-      h += `<div class="load-row"><input type="number" class="load-input" placeholder="${prev?prev.kg+'kg':'kg'}" step="2.5" min="0" oninput="saveLoad('${ex.id}',this.value)"><span class="load-unit">kg</span>`;
-      if (prev) h += `<span class="load-prev">Última: ${prev.kg}kg · ${prev.date}</span>`;
-      h += `</div></div>`;
-    }
-    h += `</div>`;
-  });
-
-  const allDone = done === total;
-  h += `<button class="finish-btn" onclick="finishSession()" ${allDone?'':'disabled'}>${allDone?'✓ Marcar sesión como completada':'Completá todos los ejercicios para terminar'}</button>`;
-  c.innerHTML = h;
-}
-
 function finishSession() {
   const today = new Date().toDateString();
   ST.sessions = ST.sessions.filter(s => s.date!==today);
@@ -393,25 +488,29 @@ function finishSession() {
   ST.session = { day: null, completed: {}, collapsed: {} };
   selDay = null;
   clearInterval(T.interval); T.running = false; T.remaining = T.secs;
-  saveST(); showToast('Sesión registrada. ¡Bien hecho!'); render();
+  saveST(); showToast(t().toastSession); render();
 }
 
 function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
 }
 
 function render() {
+  const locale = t().dateLocale;
+  document.getElementById('header-title').textContent = t().appTitle;
+  document.getElementById('lang-toggle').textContent = t().toggleLang;
+  document.title = t().appTitle;
   document.getElementById('today-label').textContent = new Date()
-    .toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})
-    .replace(/^\w/,c=>c.toUpperCase());
-  renderHint(); renderTabs(); renderTimer(); renderWorkout();
+    .toLocaleDateString(locale, {weekday:'long', day:'numeric', month:'long'})
+    .replace(/^\w/, c => c.toUpperCase());
+  renderTabs(); renderTimer(); renderWorkout();
 }
 
 if (selDay) {
   const comp = ST.session.completed || {};
-  const first = DAYS[selDay].exercises.find(e => !comp[e.id]);
+  const first = getDays()[selDay].exercises.find(e => !comp[e.id]);
   if (first) { T.secs = first.rest; T.remaining = first.rest; }
 }
 render();
