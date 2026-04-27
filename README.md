@@ -30,6 +30,14 @@ El CSS vive separado del HTML. Las variables de color y tipografía están defin
 
 ---
 
+## Idioma
+
+La app soporta español e inglés. El toggle ES | EN en el header persiste la preferencia en `localStorage` (`gym_lang`). El idioma activo se muestra con fondo oscuro en el segmented control.
+
+Todo el contenido cambia con el idioma: UI, nombres de ejercicios, notas técnicas, calentamiento, fechas (locale `es-AR` / `en-GB`). Los ejercicios sin traducción natural (hip thrust, farmer's carry, dead bug, hip abduction) se mantienen igual en ambos idiomas.
+
+---
+
 ## Rutina
 
 4 días de entrenamiento full body con énfasis rotativo:
@@ -37,21 +45,11 @@ El CSS vive separado del HTML. Las variables de color y tipografía están defin
 | Día | Énfasis | Notas |
 |-----|---------|-------|
 | Día 1 | Tren inferior + pecho | Sentadilla, press banca, remo, fondos |
-| Día 2 | Posterior + hombro | RDL, press militar, dominadas, hip thrust |
+| Día 2 | Posterior + hombro | Peso muerto, press militar, dominadas, hip thrust |
 | Día 3 | Unilateral + brazo | Búlgara, farmer's carry, curl, extensiones |
 | Día 4 | Tren superior puro | Opcional — sin carga espinal |
 
-Cada día arranca con un **bloque de calentamiento fijo de 15 minutos** prescrito por fisioterapeuta para la hernia L5-S1: movilidad de cadera, Cat-Cow, Dead Bug, Hip Abduction con banda, Squat y RDL con carga liviana.
-
----
-
-## Scheduling
-
-La app sugiere qué día entrenar basándose en el historial de sesiones guardado en localStorage.
-
-Lógica de progresión: D1 → D2 → D3 → (D4 opcional el sábado) → D1. Los días 1, 2 y 3 requieren al menos un día de descanso entre sí. El Día 4 no puede pegarse al Día 1 por solapamiento de pecho. Los viernes están bloqueados por preferencia del usuario.
-
-Cuando arranque la temporada de rugby (julio), el sábado se convierte en día de deporte y la rutina vuelve a 3 días semanales — esto está pendiente como ajuste.
+Cada día arranca con un **bloque de calentamiento fijo de 15 minutos** prescrito por fisioterapeuta para la hernia L5-S1: movilidad de cadera, Cat-Cow, Dead Bug, Hip Abduction con banda, Squat y peso muerto con carga liviana.
 
 ---
 
@@ -59,7 +57,7 @@ Cuando arranque la temporada de rugby (julio), el sábado se convierte en día d
 
 Cada ejercicio tiene asignado un nivel de carga espinal:
 
-- **⭐⭐ crítico** — ejercicios terapéuticos clave o de alta carga axial: RDL, sentadilla, hip thrust, farmer's carry. Tienen nota técnica específica visible en la card.
+- **⭐⭐ crítico** — ejercicios terapéuticos clave o de alta carga axial: peso muerto, sentadilla, hip thrust, farmer's carry. Tienen nota técnica específica visible en la card.
 - **⭐ moderado** — ejercicios con carga espinal presente pero controlable: remo, búlgara, dominadas, plancha.
 - Sin badge — sin carga espinal relevante.
 
