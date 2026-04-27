@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Gym Tracker</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -15,7 +15,10 @@
       <h1 id="header-title">Rutina de gimnasio</h1>
       <p id="today-label"></p>
     </div>
-    <button class="lang-toggle" id="lang-toggle" onclick="toggleLang()">EN</button>
+    <div class="lang-toggle-wrap">
+      <button class="lang-opt" id="lang-es" onclick="setLang('es')">ES</button>
+      <button class="lang-opt" id="lang-en" onclick="setLang('en')">EN</button>
+    </div>
   </div>
 
   <div class="timer-bar">
@@ -104,8 +107,8 @@ const I18N = {
 
 function t() { return I18N[lang]; }
 
-function toggleLang() {
-  lang = lang === 'es' ? 'en' : 'es';
+function setLang(l) {
+  lang = l;
   localStorage.setItem('gym_lang', lang);
   render();
 }
@@ -352,7 +355,7 @@ function renderPills() {
     html += `<button class="pill${T.secs === p ? ' selected' : ''}" onclick="pickPill(${p})">${p}s</button>`;
   });
   html += `<span class="pill-sep"></span>`;
-  html += `<div class="pill-custom"><input type="number" class="pill-input" value="${T.secs}" min="10" max="600" step="5" onchange="pickCustom(this.value)" onfocus="this.select()"><span class="pill-unit">${t().seg}</span></div>`;
+  html += `<div class="pill-custom"><input type="number" class="pill-input" value="${T.secs}" min="10" max="600" step="5" oninput="pickCustom(this.value)" onfocus="this.select()"><span class="pill-unit">${t().seg}</span></div>`;
   c.innerHTML = html;
 }
 
@@ -500,7 +503,8 @@ function showToast(msg) {
 function render() {
   const locale = t().dateLocale;
   document.getElementById('header-title').textContent = t().appTitle;
-  document.getElementById('lang-toggle').textContent = t().toggleLang;
+  document.getElementById('lang-es').classList.toggle('active', lang === 'es');
+  document.getElementById('lang-en').classList.toggle('active', lang === 'en');
   document.title = t().appTitle;
   document.getElementById('today-label').textContent = new Date()
     .toLocaleDateString(locale, {weekday:'long', day:'numeric', month:'long'})

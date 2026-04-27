@@ -288,11 +288,16 @@ html, body {
 }
 
 /* ── Lang toggle ── */
-.lang-toggle {
-  padding: 5px 12px; border-radius: 20px;
-  border: 1px solid var(--border-mid); font-size: 12px; font-weight: 500;
-  cursor: pointer; background: var(--bg-primary); color: var(--text-secondary);
-  font-family: inherit; transition: all 0.15s; flex-shrink: 0;
+.lang-toggle-wrap {
+  display: flex; border-radius: 20px; overflow: hidden;
+  border: 1px solid var(--border-mid); flex-shrink: 0;
+}
+.lang-opt {
+  padding: 5px 11px; font-size: 12px; font-weight: 500;
+  cursor: pointer; background: var(--bg-primary); color: var(--text-tertiary);
+  font-family: inherit; transition: all 0.15s; border: none;
   letter-spacing: 0.04em;
 }
-.lang-toggle:hover { background: var(--bg-secondary); color: var(--text-primary); }
+.lang-opt:first-child { border-right: 1px solid var(--border-mid); }
+.lang-opt.active { background: var(--text-primary); color: var(--bg-primary); }
+.lang-opt:not(.active):hover { background: var(--bg-secondary); color: var(--text-secondary); }
