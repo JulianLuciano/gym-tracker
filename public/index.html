@@ -359,6 +359,9 @@ function renderPills() {
   c.innerHTML = html;
 }
 
+function pickPill(secs) { setTimerSecs(secs, true); }
+function pickCustom(val) { const n = parseInt(val); if (!isNaN(n) && n >= 10) setTimerSecs(n, true); }
+
 function renderTabs() {
   const c = document.getElementById('day-tabs');
   const sub = document.getElementById('day-tab-sub');
