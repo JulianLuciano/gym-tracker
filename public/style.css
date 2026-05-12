@@ -301,3 +301,33 @@ html, body {
 .lang-opt:first-child { border-right: 1px solid var(--border-mid); }
 .lang-opt.active { background: var(--text-primary); color: var(--bg-primary); }
 .lang-opt:not(.active):hover { background: var(--bg-secondary); color: var(--text-secondary); }
+
+/* ── Warmup collapsible ── */
+.warmup-block {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  margin-bottom: 8px;
+  border-left: 3px solid var(--green);
+  overflow: hidden;
+}
+.warmup-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 14px; cursor: pointer; user-select: none;
+  gap: 8px;
+}
+.warmup-header:hover { background: rgba(26,26,24,0.04); }
+.warmup-title {
+  font-size: 12px; font-weight: 500; letter-spacing: 0.06em;
+  color: var(--text-tertiary); text-transform: uppercase;
+}
+.warmup-header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.warmup-badge-inline {
+  font-size: 11px; font-weight: 500;
+  background: var(--green-bg); color: var(--green-text);
+  padding: 2px 9px; border-radius: 10px;
+}
+.warmup-chevron {
+  font-size: 16px; color: var(--text-tertiary); line-height: 1;
+  transform: rotate(0deg);
+}
+.warmup-steps { list-style: none; padding: 0 14px 12px; margin-top: 0; }

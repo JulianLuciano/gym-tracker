@@ -63,11 +63,11 @@ let lang = localStorage.getItem('gym_lang') || 'es';
 const I18N = {
   es: {
     appTitle: 'Rutina de gimnasio',
-    toggleLang: 'EN',
     timerIdle: 'Elegí un día para empezar',
     timerRest: 'Descanso entre series',
     allDone: 'Todos completados',
-    warmupTitle: 'Calentamiento · 15 min',
+    warmupBaseTitle: 'Calentamiento base · 10 min',
+    warmupSpecificTitle: 'Activación específica · 5 min',
     warmupBadge: 'Siempre',
     progressLabel: (done, total, pct) => `${done} / ${total} ejercicios completados (${pct}%)`,
     emptyTitle: 'Seleccioná un día',
@@ -84,11 +84,11 @@ const I18N = {
   },
   en: {
     appTitle: 'Gym Routine',
-    toggleLang: 'ES',
     timerIdle: 'Select a day to start',
     timerRest: 'Rest between sets',
     allDone: 'All done',
-    warmupTitle: 'Warm-up · 15 min',
+    warmupBaseTitle: 'Base warm-up · 10 min',
+    warmupSpecificTitle: 'Specific activation · 5 min',
     warmupBadge: 'Always',
     progressLabel: (done, total, pct) => `${done} / ${total} exercises completed (${pct}%)`,
     emptyTitle: 'Select a day',
@@ -115,28 +115,89 @@ function setLang(l) {
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
-const WARMUP = {
+// Warmup base — same every day
+const WARMUP_BASE = {
   es: [
     { step:1, name:'Movilidad de cadera (círculos, hip flexor stretch)', detail:'2 min' },
     { step:2, name:'Cat-Cow + rotación torácica', detail:'2 min · L5-S1' },
     { step:3, name:'Dead Bug', detail:'3x10' },
     { step:4, name:'Hip Abduction con banda', detail:'3x8 c/lado' },
-    { step:5, name:'Barbell Back Squat', detail:'3x6, liviano, técnica' },
-    { step:6, name:'Peso muerto', detail:'3x6-8, liviano, técnica' },
+    { step:5, name:'Squat con barra vacía', detail:'3x6' },
+    { step:6, name:'Peso muerto con barra vacía', detail:'3x6-8' },
   ],
   en: [
     { step:1, name:'Hip mobility (circles, hip flexor stretch)', detail:'2 min' },
     { step:2, name:'Cat-Cow + thoracic rotation', detail:'2 min · L5-S1' },
     { step:3, name:'Dead Bug', detail:'3x10' },
     { step:4, name:'Banded Hip Abduction', detail:'3x8 each side' },
-    { step:5, name:'Barbell Back Squat', detail:'3x6, light, technique' },
-    { step:6, name:'Romanian Deadlift', detail:'3x6-8, light, technique' },
+    { step:5, name:'Empty bar squat', detail:'3x6' },
+    { step:6, name:'Empty bar Romanian deadlift', detail:'3x6-8' },
   ]
+};
+
+// Warmup specific — per day
+const WARMUP_SPECIFIC = {
+  es: {
+    1: [
+      { name:'Sentadilla con barra vacía', detail:'2x10 — activación antes de cargar' },
+      { name:'Press de banca vacío o mancuernas muy livianas', detail:'2x10 — activa pecho y hombro anterior' },
+      { name:'Band pull apart con banda elástica', detail:'2x15 — manguito rotador antes del press' },
+    ],
+    2: [
+      { name:'Peso muerto muy liviano', detail:'2x10 — activa cadena posterior' },
+      { name:'Rotaciones externas con banda', detail:'2x15 c/lado — manguito rotador antes del press militar' },
+      { name:'Face pulls con banda o polea baja', detail:'2x15 — deltoides posterior y trapecio medio' },
+    ],
+    3: [
+      { name:'Zancada sin peso', detail:'2x10 c/lado — activa glúteo y cuádriceps para la búlgara' },
+      { name:'Curl con banda elástica', detail:'2x15 — activa bíceps' },
+      { name:'Extensión de tríceps con banda', detail:'2x15 — activa tríceps' },
+    ],
+    '4a': [
+      { name:'Rotaciones externas con banda', detail:'2x15 c/lado — manguito rotador' },
+      { name:'Band pull apart', detail:'2x15 — hombro posterior' },
+      { name:'Press liviano con mancuernas', detail:'2x10 — activa pecho y hombro' },
+      { name:'Curl con banda', detail:'2x15 — activa bíceps' },
+    ],
+    '4b': [
+      { name:'Sentadilla goblet con mancuerna liviana', detail:'2x10 — activa cuádriceps y glúteo' },
+      { name:'Puente de glúteos sin peso', detail:'2x15 — activa glúteo antes del hip thrust' },
+      { name:'Abducción de cadera con banda de pie', detail:'2x15 — activa glúteo medio' },
+    ],
+  },
+  en: {
+    1: [
+      { name:'Empty bar squat', detail:'2x10 — specific activation before loading' },
+      { name:'Empty bar or very light dumbbell bench press', detail:'2x10 — activates chest and anterior shoulder' },
+      { name:'Band pull apart', detail:'2x15 — rotator cuff before pressing' },
+    ],
+    2: [
+      { name:'Very light Romanian deadlift', detail:'2x10 — activates posterior chain' },
+      { name:'External rotations with band', detail:'2x15 each side — rotator cuff before overhead press' },
+      { name:'Face pulls with band or low cable', detail:'2x15 — posterior deltoid and mid trapezius' },
+    ],
+    3: [
+      { name:'Bodyweight lunge', detail:'2x10 each side — activates glute and quad for split squat' },
+      { name:'Banded bicep curl', detail:'2x15 — activates biceps' },
+      { name:'Banded tricep extension', detail:'2x15 — activates triceps' },
+    ],
+    '4a': [
+      { name:'External rotations with band', detail:'2x15 each side — rotator cuff' },
+      { name:'Band pull apart', detail:'2x15 — posterior shoulder' },
+      { name:'Light dumbbell press', detail:'2x10 — activates chest and shoulder' },
+      { name:'Banded bicep curl', detail:'2x15 — activates biceps' },
+    ],
+    '4b': [
+      { name:'Light goblet squat', detail:'2x10 — activates quads and glutes' },
+      { name:'Bodyweight glute bridge', detail:'2x15 — activates glutes before hip thrust' },
+      { name:'Standing banded hip abduction', detail:'2x15 — activates glute med before press and split squat' },
+    ],
+  }
 };
 
 const DAYS = {
   es: {
-    1:{ label:'Día 1', sub:'Tren inferior + pecho', exercises:[
+    1:{ label:'Día 1', sub:'Tren inferior + pecho', warmupKey:1, exercises:[
       { id:'d1e1', name:'Sentadilla con barra', sets:'4x6-8', hernia:'high', rest:120, note:'Core activado, no flectés lumbar' },
       { id:'d1e2', name:'Press de banca plano', sets:'4x8-10', hernia:null, rest:120 },
       { id:'d1e3', name:'Press de banca inclinado mancuernas', sets:'3x10', hernia:null, rest:90 },
@@ -144,7 +205,7 @@ const DAYS = {
       { id:'d1e5', name:'Fondos / press francés', sets:'3x10', hernia:null, rest:60 },
       { id:'d1e6', name:'Plancha', sets:'3x40seg', hernia:'med', rest:60, note:'No hundas la cadera' },
     ]},
-    2:{ label:'Día 2', sub:'Posterior + hombro', exercises:[
+    2:{ label:'Día 2', sub:'Posterior + hombro', warmupKey:2, exercises:[
       { id:'d2e1', name:'Peso muerto (carga progresiva)', sets:'4x8', hernia:'high', rest:120, note:'El más terapéutico — espalda recta, caderas atrás' },
       { id:'d2e2', name:'Press militar con barra', sets:'4x8-10', hernia:null, rest:120 },
       { id:'d2e3', name:'Elevaciones laterales', sets:'3x12-15', hernia:null, rest:60 },
@@ -152,7 +213,7 @@ const DAYS = {
       { id:'d2e5', name:'Hip thrust con barra', sets:'3x10', hernia:'high', rest:90, note:'Activá glúteos antes de cargar, neutro lumbar arriba' },
       { id:'d2e6', name:'Curl de bíceps con barra', sets:'3x10', hernia:null, rest:60 },
     ]},
-    3:{ label:'Día 3', sub:'Unilateral + brazo', exercises:[
+    3:{ label:'Día 3', sub:'Unilateral + brazo', warmupKey:3, exercises:[
       { id:'d3e1', name:'Sentadilla búlgara', sets:'4x8 c/lado', hernia:'med', rest:90, note:'Menos carga espinal que la bilateral' },
       { id:'d3e2', name:'Press inclinado mancuernas', sets:'3x10', hernia:null, rest:90 },
       { id:'d3e3', name:'Remo en polea', sets:'4x10', hernia:'med', rest:90, note:'Estirá en la excéntrica, espalda neutra' },
@@ -160,26 +221,35 @@ const DAYS = {
       { id:'d3e5', name:'Extensión tríceps en polea', sets:'3x12', hernia:null, rest:60 },
       { id:'d3e6', name:"Farmer's carry", sets:'3x20m', hernia:'high', rest:90, note:'Carga simétrica, core muy apretado, pasos cortos' },
     ]},
-    4:{ label:'Día 4', sub:'Tren superior puro', optional:true, exercises:[
-      { id:'d4e1', name:'Press de banca plano', sets:'5x5 (fuerza)', hernia:null, rest:120 },
-      { id:'d4e2', name:'Press militar', sets:'4x8', hernia:null, rest:120 },
-      { id:'d4e3', name:'Elevaciones laterales', sets:'4x15', hernia:null, rest:60 },
-      { id:'d4e4', name:'Curl de bíceps con barra', sets:'4x10', hernia:null, rest:60 },
-      { id:'d4e5', name:'Curl concentrado mancuerna', sets:'3x12', hernia:null, rest:60 },
-      { id:'d4e6', name:'Press francés / fondos', sets:'4x10', hernia:null, rest:60 },
-      { id:'d4e7', name:'Extensión polea con cuerda', sets:'3x15', hernia:null, rest:60 },
+    '4a':{ label:'Día 4A', sub:'Tren superior puro', warmupKey:'4a', optional:true, exercises:[
+      { id:'d4ae1', name:'Press de banca plano', sets:'5x5 (fuerza)', hernia:null, rest:120 },
+      { id:'d4ae2', name:'Press militar', sets:'4x8', hernia:null, rest:120 },
+      { id:'d4ae3', name:'Elevaciones laterales', sets:'4x15', hernia:null, rest:60 },
+      { id:'d4ae4', name:'Curl de bíceps con barra', sets:'4x10', hernia:null, rest:60 },
+      { id:'d4ae5', name:'Curl concentrado mancuerna', sets:'3x12', hernia:null, rest:60 },
+      { id:'d4ae6', name:'Press francés / fondos', sets:'4x10', hernia:null, rest:60 },
+      { id:'d4ae7', name:'Extensión polea con cuerda', sets:'3x15', hernia:null, rest:60 },
+    ]},
+    '4b':{ label:'Día 4B', sub:'Piernas sin carga espinal', warmupKey:'4b', optional:true, exercises:[
+      { id:'d4be1', name:'Sentadilla búlgara con mancuernas', sets:'4x8 c/lado', hernia:'med', rest:90, note:'Sin barra — menos carga espinal' },
+      { id:'d4be2', name:'Prensa de piernas', sets:'4x8-10', hernia:null, rest:90, note:'Máquina — carga sin compresión lumbar' },
+      { id:'d4be3', name:'Hip thrust con barra', sets:'4x10', hernia:'med', rest:90, note:'Activá glúteos antes de cargar, neutro lumbar arriba' },
+      { id:'d4be4', name:'Curl femoral en máquina', sets:'3x12', hernia:null, rest:60, note:'Isquiotibiales sin carga axial' },
+      { id:'d4be5', name:'Extensión de cuádriceps en máquina', sets:'3x12', hernia:null, rest:60 },
+      { id:'d4be6', name:'Abducción de cadera en máquina', sets:'3x15', hernia:'med', rest:60, note:'Complementa el hip abduction del calentamiento' },
+      { id:'d4be7', name:"Farmer's carry", sets:'3x20m', hernia:'high', rest:90, note:'Carga simétrica, core muy apretado, pasos cortos' },
     ]},
   },
   en: {
-    1:{ label:'Day 1', sub:'Lower body + chest', exercises:[
-      { id:'d1e1', name:'Barbell back squat', sets:'4x6-8', hernia:'high', rest:120, note:'Brace your core, don\'t flex the lower back' },
+    1:{ label:'Day 1', sub:'Lower body + chest', warmupKey:1, exercises:[
+      { id:'d1e1', name:'Barbell back squat', sets:'4x6-8', hernia:'high', rest:120, note:"Brace your core, don't flex the lower back" },
       { id:'d1e2', name:'Flat bench press', sets:'4x8-10', hernia:null, rest:120 },
       { id:'d1e3', name:'Incline dumbbell press', sets:'3x10', hernia:null, rest:90 },
       { id:'d1e4', name:'Dumbbell row', sets:'4x10 each side', hernia:'med', rest:90, note:'Rest knee on bench, neutral spine' },
       { id:'d1e5', name:'Dips / skull crushers', sets:'3x10', hernia:null, rest:60 },
-      { id:'d1e6', name:'Plank', sets:'3x40sec', hernia:'med', rest:60, note:'Don\'t let the hips sag' },
+      { id:'d1e6', name:'Plank', sets:'3x40sec', hernia:'med', rest:60, note:"Don't let the hips sag" },
     ]},
-    2:{ label:'Day 2', sub:'Posterior + shoulders', exercises:[
+    2:{ label:'Day 2', sub:'Posterior + shoulders', warmupKey:2, exercises:[
       { id:'d2e1', name:'Romanian deadlift (progressive load)', sets:'4x8', hernia:'high', rest:120, note:'Most therapeutic — straight back, hips back' },
       { id:'d2e2', name:'Barbell overhead press', sets:'4x8-10', hernia:null, rest:120 },
       { id:'d2e3', name:'Lateral raises', sets:'3x12-15', hernia:null, rest:60 },
@@ -187,7 +257,7 @@ const DAYS = {
       { id:'d2e5', name:'Barbell hip thrust', sets:'3x10', hernia:'high', rest:90, note:'Activate glutes before loading, neutral lumbar at top' },
       { id:'d2e6', name:'Barbell bicep curl', sets:'3x10', hernia:null, rest:60 },
     ]},
-    3:{ label:'Day 3', sub:'Unilateral + arms', exercises:[
+    3:{ label:'Day 3', sub:'Unilateral + arms', warmupKey:3, exercises:[
       { id:'d3e1', name:'Bulgarian split squat', sets:'4x8 each side', hernia:'med', rest:90, note:'Less spinal load than bilateral squat' },
       { id:'d3e2', name:'Incline dumbbell press', sets:'3x10', hernia:null, rest:90 },
       { id:'d3e3', name:'Cable row', sets:'4x10', hernia:'med', rest:90, note:'Full stretch on the eccentric, neutral spine' },
@@ -195,20 +265,32 @@ const DAYS = {
       { id:'d3e5', name:'Cable tricep extension', sets:'3x12', hernia:null, rest:60 },
       { id:'d3e6', name:"Farmer's carry", sets:'3x20m', hernia:'high', rest:90, note:'Symmetric load, very tight core, short steps' },
     ]},
-    4:{ label:'Day 4', sub:'Upper body only', optional:true, exercises:[
-      { id:'d4e1', name:'Flat bench press', sets:'5x5 (strength)', hernia:null, rest:120 },
-      { id:'d4e2', name:'Overhead press', sets:'4x8', hernia:null, rest:120 },
-      { id:'d4e3', name:'Lateral raises', sets:'4x15', hernia:null, rest:60 },
-      { id:'d4e4', name:'Barbell bicep curl', sets:'4x10', hernia:null, rest:60 },
-      { id:'d4e5', name:'Concentration curl', sets:'3x12', hernia:null, rest:60 },
-      { id:'d4e6', name:'Skull crushers / dips', sets:'4x10', hernia:null, rest:60 },
-      { id:'d4e7', name:'Rope tricep pushdown', sets:'3x15', hernia:null, rest:60 },
+    '4a':{ label:'Day 4A', sub:'Upper body only', warmupKey:'4a', optional:true, exercises:[
+      { id:'d4ae1', name:'Flat bench press', sets:'5x5 (strength)', hernia:null, rest:120 },
+      { id:'d4ae2', name:'Overhead press', sets:'4x8', hernia:null, rest:120 },
+      { id:'d4ae3', name:'Lateral raises', sets:'4x15', hernia:null, rest:60 },
+      { id:'d4ae4', name:'Barbell bicep curl', sets:'4x10', hernia:null, rest:60 },
+      { id:'d4ae5', name:'Concentration curl', sets:'3x12', hernia:null, rest:60 },
+      { id:'d4ae6', name:'Skull crushers / dips', sets:'4x10', hernia:null, rest:60 },
+      { id:'d4ae7', name:'Rope tricep pushdown', sets:'3x15', hernia:null, rest:60 },
+    ]},
+    '4b':{ label:'Day 4B', sub:'Legs — no spinal load', warmupKey:'4b', optional:true, exercises:[
+      { id:'d4be1', name:'Dumbbell Bulgarian split squat', sets:'4x8 each side', hernia:'med', rest:90, note:'No bar — less spinal load' },
+      { id:'d4be2', name:'Leg press', sets:'4x8-10', hernia:null, rest:90, note:'Machine — load without lumbar compression' },
+      { id:'d4be3', name:'Barbell hip thrust', sets:'4x10', hernia:'med', rest:90, note:'Activate glutes before loading, neutral lumbar at top' },
+      { id:'d4be4', name:'Lying leg curl', sets:'3x12', hernia:null, rest:60, note:'Hamstrings with no axial load' },
+      { id:'d4be5', name:'Leg extension', sets:'3x12', hernia:null, rest:60 },
+      { id:'d4be6', name:'Hip abduction machine', sets:'3x15', hernia:'med', rest:60, note:'Complements the warm-up hip abduction' },
+      { id:'d4be7', name:"Farmer's carry", sets:'3x20m', hernia:'high', rest:90, note:'Symmetric load, very tight core, short steps' },
     ]},
   }
 };
 
+const DAY_KEYS = [1, 2, 3, '4a', '4b'];
+
 function getDays() { return DAYS[lang]; }
-function getWarmup() { return WARMUP[lang]; }
+function getWarmupBase() { return WARMUP_BASE[lang]; }
+function getWarmupSpecific(key) { return WARMUP_SPECIFIC[lang][key] || []; }
 
 // ── State ─────────────────────────────────────────────────────────────────────
 
@@ -367,7 +449,7 @@ function renderTabs() {
   const sub = document.getElementById('day-tab-sub');
   const days = getDays();
   c.innerHTML = '';
-  [1,2,3,4].forEach(d => {
+  DAY_KEYS.forEach(d => {
     const day = days[d];
     const btn = document.createElement('button');
     btn.className = 'day-tab' + (d===selDay?' active':'');
@@ -382,6 +464,29 @@ function renderTabs() {
   } else if (sub) {
     sub.style.display = 'none';
   }
+}
+
+function renderWarmupBlock(items, blockId, title, badge) {
+  const collapsed = ST.session.collapsed || {};
+  const isCollapsed = collapsed[blockId] === true;
+  let h = '';
+  h += `<div class="warmup-block">`;
+  h += `<div class="warmup-header" onclick="toggleCollapse('${blockId}')">`;
+  h += `<span class="warmup-title">${title}</span>`;
+  h += `<div class="warmup-header-right">`;
+  if (badge) h += `<span class="warmup-badge-inline">${badge}</span>`;
+  h += `<span class="warmup-chevron">${isCollapsed ? '›' : '‹'}</span>`;
+  h += `</div></div>`;
+  if (!isCollapsed) {
+    h += `<ul class="warmup-steps">`;
+    items.forEach((w, i) => {
+      const num = w.step !== undefined ? w.step : i + 1;
+      h += `<li class="warmup-step"><span class="step-num">${num}.</span><span>${w.name} <span style="color:#888780;font-size:12px">· ${w.detail}</span></span></li>`;
+    });
+    h += `</ul>`;
+  }
+  h += `</div>`;
+  return h;
 }
 
 function renderWorkout() {
@@ -403,12 +508,14 @@ function renderWorkout() {
   h += `<div class="prog-label">${t().progressLabel(done, total, pct)}</div>`;
   h += `<div class="prog-wrap"><div class="prog-fill" style="width:${pct}%"></div></div>`;
 
-  h += `<div class="sec-title">${t().warmupTitle}</div>`;
-  h += `<div class="warmup-block"><span class="warmup-badge">${t().warmupBadge}</span><ul class="warmup-steps">`;
-  getWarmup().forEach(w => {
-    h += `<li class="warmup-step"><span class="step-num">${w.step}.</span><span>${w.name} <span style="color:#888780;font-size:12px">· ${w.detail}</span></span></li>`;
-  });
-  h += `</ul></div>`;
+  // Warmup base block
+  h += renderWarmupBlock(getWarmupBase(), '__warmup_base__', t().warmupBaseTitle, t().warmupBadge);
+
+  // Warmup specific block
+  const specificItems = getWarmupSpecific(day.warmupKey);
+  if (specificItems.length) {
+    h += renderWarmupBlock(specificItems, '__warmup_specific__', t().warmupSpecificTitle, null);
+  }
 
   h += `<div class="sec-title">${day.label} — ${day.sub}</div>`;
   day.exercises.forEach(ex => {
@@ -469,9 +576,9 @@ function onExComplete(exId) {
   saveST(); renderTimer(); renderWorkout();
 }
 
-function toggleCollapse(exId) {
+function toggleCollapse(id) {
   if (!ST.session.collapsed) ST.session.collapsed = {};
-  ST.session.collapsed[exId] = !ST.session.collapsed[exId];
+  ST.session.collapsed[id] = !ST.session.collapsed[id];
   saveST(); renderWorkout();
 }
 
@@ -517,7 +624,7 @@ function render() {
 
 if (selDay) {
   const comp = ST.session.completed || {};
-  const first = getDays()[selDay].exercises.find(e => !comp[e.id]);
+  const first = getDays()[selDay] && getDays()[selDay].exercises.find(e => !comp[e.id]);
   if (first) { T.secs = first.rest; T.remaining = first.rest; }
 }
 render();
