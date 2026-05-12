@@ -40,16 +40,27 @@ Todo el contenido cambia con el idioma: UI, nombres de ejercicios, notas técnic
 
 ## Rutina
 
-4 días de entrenamiento full body con énfasis rotativo:
+5 días de entrenamiento con énfasis rotativo. Los días 4A y 4B son opcionales e intercambiables:
 
 | Día | Énfasis | Notas |
 |-----|---------|-------|
 | Día 1 | Tren inferior + pecho | Sentadilla, press banca, remo, fondos |
 | Día 2 | Posterior + hombro | Peso muerto, press militar, dominadas, hip thrust |
 | Día 3 | Unilateral + brazo | Búlgara, farmer's carry, curl, extensiones |
-| Día 4 | Tren superior puro | Opcional — sin carga espinal |
+| Día 4A | Tren superior puro | Opcional — sin carga espinal |
+| Día 4B | Piernas sin carga espinal | Opcional — prensa, búlgara con mancuernas, hip thrust, máquinas |
 
-Cada día arranca con un **bloque de calentamiento fijo de 15 minutos** prescrito por fisioterapeuta para la hernia L5-S1: movilidad de cadera, Cat-Cow, Dead Bug, Hip Abduction con banda, Squat y peso muerto con carga liviana.
+---
+
+## Calentamiento
+
+Cada día tiene dos bloques de calentamiento, ambos colapsables:
+
+**Bloque base (10 min) — todos los días:** movilidad de cadera, Cat-Cow, Dead Bug, Hip Abduction con banda, squat y peso muerto con barra vacía. Marcado con la pastilla "Siempre". Prescrito por fisioterapeuta para la hernia L5-S1.
+
+**Activación específica (5 min) — según el día:** ejercicios de activación adaptados al énfasis del día. Día 1: activación de pecho, hombro anterior y manguito rotador. Día 2: cadena posterior y deltoides posterior. Día 3: glúteo, cuádriceps y brazos. Día 4A: manguito rotador y hombro. Día 4B: cuádriceps, glúteo y abductores.
+
+El estado de colapso de cada bloque persiste en localStorage durante la sesión.
 
 ---
 
@@ -58,7 +69,7 @@ Cada día arranca con un **bloque de calentamiento fijo de 15 minutos** prescrit
 Cada ejercicio tiene asignado un nivel de carga espinal:
 
 - **⭐⭐ crítico** — ejercicios terapéuticos clave o de alta carga axial: peso muerto, sentadilla, hip thrust, farmer's carry. Tienen nota técnica específica visible en la card.
-- **⭐ moderado** — ejercicios con carga espinal presente pero controlable: remo, búlgara, dominadas, plancha.
+- **⭐ moderado** — ejercicios con carga espinal presente pero controlable: remo, búlgara, dominadas, plancha, abducción de cadera en máquina.
 - Sin badge — sin carga espinal relevante.
 
 Los ejercicios marcados como críticos son también los más terapéuticos cuando se ejecutan bien — el badge no significa "evitar" sino "prestar atención".
@@ -80,6 +91,8 @@ Un solo timer global en la parte superior. El usuario siempre le da play manualm
 
 **Modo manual:** si el usuario toca cualquier pastilla o el campo libre, la lógica automática se desactiva y el timer queda en ese valor indefinidamente — hasta que completa otro ejercicio, momento en que la lógica se retoma (90s → tiempo del siguiente).
 
+**Tiempos de descanso por tipo:** compuestos y ejercicios de alta demanda neuromuscular → 90–120s. Aislamiento y máquinas → 60s.
+
 **Al terminar:** beep triple (Web Audio API) + vibración si el dispositivo lo soporta.
 
 **Animación del círculo:** al setear un tiempo el arco se llena instantáneamente. Al darle play empieza a drenar linealmente hasta cero. El botón de pausa es un ícono SVG minimalista (dos barras), consistente con el estilo del play.
@@ -100,7 +113,7 @@ Al marcar un ejercicio como completado, la card se **colapsa** mostrando solo la
 
 ## Navegación por días
 
-Los 4 días se muestran en una fila única de tabs con ancho parejo (`flex: 1`). Solo aparece el nombre del día ("Día 1", "Día 2", etc.) para mantener altura uniforme. El subtítulo del día activo se muestra debajo de los tabs como línea de contexto.
+Los 5 días se muestran en una fila única de tabs con ancho parejo (`flex: 1`): Día 1, Día 2, Día 3, Día 4A, Día 4B. El subtítulo del día activo aparece debajo de los tabs como línea de contexto.
 
 ---
 
@@ -126,7 +139,7 @@ Todo el estado se guarda en `localStorage` bajo la key `gym_v4`:
   "session": {
     "day": null,
     "completed": { "d1e1": true },
-    "collapsed": { "d1e1": true }
+    "collapsed": { "d1e1": true, "__warmup_base__": false }
   }
 }
 ```
